@@ -1,6 +1,7 @@
 package com.example.librarymanagementsystem.service;
 
 import com.example.librarymanagementsystem.controller.dto.PagedBookDTO;
+import com.example.librarymanagementsystem.customExceptions.CustomException;
 import com.example.librarymanagementsystem.dtos.BookDTO;
 import com.example.librarymanagementsystem.enums.Category;
 import com.example.librarymanagementsystem.mappers.BookMapper;
@@ -10,6 +11,7 @@ import com.example.librarymanagementsystem.repository.AuthorRepository;
 import com.example.librarymanagementsystem.repository.BookRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,17 +41,17 @@ public class BookService {
 
     public BookDTO addNewBook(BookDTO bookDTO) {
         if (bookDTO.getAuthor() == null) {
-            throw new RuntimeException("Author is not provided");
+            throw new CustomException("Author is not provided", HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value());
         }
 
         if (authorRepository.findById(bookDTO.getAuthor().getId()).isEmpty()) {
-            throw new RuntimeException("The author provided does not exist!");
+            throw new CustomException("The author provided does not exist!", HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
 
         Optional<Book> foundBook = bookRepository.findFirstByTitleAndAuthorId(bookDTO.getTitle(), bookDTO.getAuthor().getId());
 
         if (foundBook.isPresent()) {
-            throw new RuntimeException("This book already exists!");
+            throw new CustomException("This book already exists!", HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value());
         }
 
         Book book = bookMapper.toEntity(bookDTO);
@@ -61,7 +63,7 @@ public class BookService {
         Optional<Book> byId = bookRepository.findById(bookDTO.getId());
 
         if (byId.isEmpty()) {
-            throw new RuntimeException("The book provided does not exist!");
+            throw new CustomException("The book provided does not exist!", HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
 
         Book book = bookMapper.toEntity(bookDTO);
@@ -90,13 +92,13 @@ public class BookService {
         Optional<Book> byId = bookRepository.findById(bookDTO.getId());
 
         if (byId.isEmpty()) {
-            throw new RuntimeException("The book provided does not exist!");
+            throw new CustomException("The book provided does not exist!", HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
 
         Book book = byId.get();
 
         if (book.getAvailableNumberOfCopies() <= 0) {
-            throw new RuntimeException("The book provided does not have an available copy");
+            throw new CustomException("The book provided does not have an available copy", HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value());
         }
 
         return borrowedBooksService.borrowBook(book, userId);
@@ -106,7 +108,7 @@ public class BookService {
         Optional<Book> byId = bookRepository.findById(bookDTO.getId());
 
         if (byId.isEmpty()) {
-            throw new RuntimeException("The book provided does not exist!");
+            throw new CustomException("The book provided does not exist!", HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
 
         Book book = byId.get();
@@ -118,7 +120,7 @@ public class BookService {
 
         Optional<Book> byId = bookRepository.findById(bookId);
         if (byId.isEmpty()) {
-            throw new RuntimeException("Book does not exist!");
+            throw new CustomException("Book does not exist!", HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
 
         Book book = byId.get();

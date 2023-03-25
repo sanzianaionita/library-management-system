@@ -1,9 +1,11 @@
 package com.example.librarymanagementsystem.service;
 
+import com.example.librarymanagementsystem.customExceptions.CustomException;
 import com.example.librarymanagementsystem.dtos.AuthorDTO;
 import com.example.librarymanagementsystem.mappers.AuthorMapper;
 import com.example.librarymanagementsystem.model.Author;
 import com.example.librarymanagementsystem.repository.AuthorRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,7 +32,7 @@ public class AuthorService {
         Optional<Author> firstByFirstNameAndLastName = authorRepository.findFirstByFirstNameAndLastName(authorDTO.getFirstName(), authorDTO.getLastName());
 
         if (firstByFirstNameAndLastName.isPresent()) {
-            throw new RuntimeException("This author already exists!");
+            throw new CustomException("This author already exists!", HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value());
         }
 
         Author author = authorMapper.toEntity(authorDTO);
